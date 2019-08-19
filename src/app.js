@@ -5,10 +5,11 @@ const mongoose = require('mongoose');
 const middleware = require('./middleware/mid');
 
 const userRouter = require('./routes/userRouter');
-const todoRouter = require('./routes/todoRouter');
+// const todoRouter = require('./routes/todoRouter');
 
 const mongoOption = {
     useNewUrlParser: true,
+    useFindAndModify: false,
     useCreateIndex: true
 }
 mongoose.connect('mongodb://localhost/myPort', mongoOption)
@@ -30,7 +31,7 @@ app.use(middleware.printMessage1);
 app.use(middleware.printMessage2);
 
 app.use('/users', userRouter);
-app.use('/todos', todoRouter);
+// app.use('/todos', todoRouter);
 
 app.get('*', (req, res) => {
     res.status(404).json({

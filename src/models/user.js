@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         lowercase: true,
         required: [true, 'username required!'],
+        unique: [true, 'username is duplicated!'],
         validate: {
             validator: function(username) {
                 return !username.includes(' ');
@@ -29,13 +30,16 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-userSchema.pre('save', async function(next){
-    const user = this;
-    try {
-        user.password = await bcrypt.hash(user.password, saltRound);        
-    } catch (error) {
-        throw new Error('encript password has something error!');
-    }
+userSchema.statics.findByCredentials = async (username, password) => {
+    const user = this.
+};
+
+userSchema.pre('save', async function(next) {
+    // Only run this function if password was actually modified
+    if (!this.isModified('password')) return next();
+  
+    // Hash the password with cost of 12
+    this.password = await bcrypt.hash(this.password, saltRound);
 
     next();
 });
