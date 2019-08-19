@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const saltRound = 8;
 
 const userSchema = new mongoose.Schema({
@@ -30,9 +30,9 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-userSchema.statics.findByCredentials = async (username, password) => {
-    const user = this.
-};
+// userSchema.statics.findByCredentials = async (username, password) => {
+//     const user = this.
+// };
 
 userSchema.pre('save', async function(next) {
     // Only run this function if password was actually modified
