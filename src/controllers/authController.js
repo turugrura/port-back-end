@@ -25,11 +25,23 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        
+        const { username, password } = req.body;
+        if(!username || !password) {
+            throw new Error('username or password is invalid!');
+        }
+        const user = await User.findByCredentials(username, password);
+        const token = await user.generateAuthToken();
+
+        res.status(200).json({
+            status: 'success',
+            length: 1,
+            data: user,
+            token
+        });
     } catch (error) {
         res.status(400).json({
             status: 'error',
-            error
+            error: error.message
         })
     }
 };

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const saltRound = 8;
 
 const userSchema = new mongoose.Schema({
@@ -25,14 +26,50 @@ const userSchema = new mongoose.Schema({
     title: {
         type: String,
         default: 'no title'
-    }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            require: true
+        }
+    }]
 }, {
     timestamps: true
 });
 
-// userSchema.statics.findByCredentials = async (username, password) => {
-//     const user = this.
-// };
+userSchema.statics.findByCredentials = async (username, password) => {
+    const user = await User.findOne({username});
+    if(!user) {
+        throw new Error('username not found');
+    }
+
+    const isPassMatch = await bcrypt.compare(password, user.password);
+    if(!isPassMatch) {
+        throw new Error('password is incorrect!');
+    }
+
+    return user;
+};
+
+userSchema.methods.toJSON = function() {
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    // delete userObject.tokens;
+
+    return userObject;
+};
+
+userSchema.methods.generateAuthToken = async function() {
+    const id = this._id.toString();
+    const token = jwt.sign({id}, process.env.JWT_SECRET);
+    this.tokens = this.tokens.concat({token});
+
+    await this.save();
+    
+    return token;
+};
 
 userSchema.pre('save', async function(next) {
     // Only run this function if password was actually modified
@@ -44,4 +81,6 @@ userSchema.pre('save', async function(next) {
     next();
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

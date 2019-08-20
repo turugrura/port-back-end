@@ -1,21 +1,10 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 const middleware = require('./middleware/mid');
 
 const userRouter = require('./routes/userRouter');
 // const todoRouter = require('./routes/todoRouter');
-
-const mongoOption = {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useCreateIndex: true
-}
-mongoose.connect('mongodb://localhost/myPort', mongoOption)
-    .then(() => {
-        console.log('connect DB successful!');
-    });
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
