@@ -11,6 +11,9 @@ router.route('/')
     .get(userConstroller.getUsers)
     .post(userConstroller.createUser);
 
+router.route('/me')
+    .get(authController.protect, userConstroller.getMe);
+
 router.route('/:id')
     .get(userConstroller.getUser)
     .patch(userConstroller.updateUser)

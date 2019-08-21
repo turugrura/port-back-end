@@ -7,7 +7,7 @@ exports.getTodos = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             status: 'cannot get all todos',
-            error
+            error: error.message
         })
     }
 };
@@ -20,7 +20,7 @@ exports.getUser = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             status: 'cannot get one todo',
-            error
+            error: error.message
         })
     }
 };
@@ -32,7 +32,7 @@ exports.createUser = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             status: 'cannot create todo',
-            error
+            error: error.message
         })
     }
 };

@@ -11,7 +11,7 @@ exports.getUsers = async (req, res) => {
         });
     } catch (error) {
         res.status(400).json({
-            error
+            error: error.message
         });
     }
 };
@@ -27,18 +27,19 @@ exports.getUser = async (req, res) => {
         });
     } catch (error) {
         res.status(400).json({
-            error
+            error: error.message
         });
     }
 };
 
 exports.createUser = async (req, res) => {
     try {
-        const { username, password, title } = req.body;
+        const { username, password, title, role } = req.body;
         const user = new User({
             username,
             password,
-            title
+            title,
+            role
         });
 
         const newUser = await user.save();
@@ -49,7 +50,7 @@ exports.createUser = async (req, res) => {
         });
     } catch (error) {
         res.status(400).json({
-            error
+            error: error.message
         });
     }
 };
@@ -81,7 +82,7 @@ exports.updateUser = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             status: 'error',
-            error
+            error: error.message
         });
     }
 };
@@ -101,7 +102,24 @@ exports.deleteUser = async (req, res) => {
     } catch (error) {
         res.status(400).json({
             error,
-            status: 'cannot delete user'
+            status: error.message
+        });
+    }
+};
+
+exports.getMe = async (req, res) => {
+    try {
+        const user = res.user;
+
+        res.status(200).json({
+            status: 'no route',
+            count: 1,
+            data: user
+        });
+    } catch (error) {
+        res.status(400).json({
+            error,
+            status: error.message
         });
     }
 };

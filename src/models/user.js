@@ -21,11 +21,20 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'password required!'],
         minlength: [8, 'password must be at least 8 characters'],
-        trim: true
+        trim: true,
+    },
+    passwordChangedAt: {
+        type: Date,
+        default: Date.now()
     },
     title: {
         type: String,
         default: 'no title'
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
     },
     tokens: [{
         token: {
@@ -56,6 +65,7 @@ userSchema.methods.toJSON = function() {
     const userObject = user.toObject();
 
     delete userObject.password;
+    delete userObject.passwordChangedAt;
     // delete userObject.tokens;
 
     return userObject;
@@ -63,12 +73,23 @@ userSchema.methods.toJSON = function() {
 
 userSchema.methods.generateAuthToken = async function() {
     const id = this._id.toString();
-    const token = jwt.sign({id}, process.env.JWT_SECRET);
+    const token = jwt.sign({id}, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN
+    });
     this.tokens = this.tokens.concat({token});
 
     await this.save();
     
     return token;
+};
+
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+    if(this.passwordChangedAt) {
+        const pwChangedTimestamp = parseInt(this.passwordChangedAt.getTime()/1000, 10);
+        return pwChangedTimestamp > JWTTimestamp;
+    };
+
+    return false;
 };
 
 userSchema.pre('save', async function(next) {
