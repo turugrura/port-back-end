@@ -75,7 +75,9 @@ exports.protect = async (req, res, next) => {
             throw new Error('password has been changed');
         };
 
-        res.user = currentUser;
+        req.token = token;
+        req.user = currentUser;
+        
         next();
     } catch (error) {
         res.status(401).json({

@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const middleware = require('./middleware/mid');
 
 const userRouter = require('./routes/userRouter');
-// const todoRouter = require('./routes/todoRouter');
+const todoRouter = require('./routes/todoRouter');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -20,10 +20,11 @@ app.use(middleware.printMessage1);
 app.use(middleware.printMessage2);
 
 app.use('/users', userRouter);
-// app.use('/todos', todoRouter);
+app.use('/users', todoRouter);
 
 app.get('*', (req, res) => {
     res.status(404).json({
+        status: 'fail',
         error: 'page not found'
     })
 });

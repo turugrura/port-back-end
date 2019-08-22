@@ -109,7 +109,7 @@ exports.deleteUser = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        const user = res.user;
+        const user = req.user;
 
         res.status(200).json({
             status: 'no route',

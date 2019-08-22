@@ -1,29 +1,30 @@
 const mongoose = require('mongoose');
 
 const todoSchema = new mongoose.Schema({
-    author: {
+    authorId: {
         type: mongoose.Schema.Types.ObjectId,
+        required: [true, 'todo must have the author'],
         ref: 'User'
     },
-    title: {
+    topic: {
         type: String,
         required: true,
-        maxlength: [100, 'Title must less than or equal 100 character'],
+        maxlength: [100, 'Topic must less than or equal 100 character'],
         unique: true,
         validate: {
             validator: function(val) {
-                return !val.trim();
+                return val.trim();
             },
-            message: 'title is empty'
+            message: 'Topic is empty'
         }
     },
     content: {
         type: String,
-        default: 'no content',
+        required: [true, 'todo must have the content'],
         maxlength: [500, 'Content must less than or equal 500 character'],
         validate: {
             validator: function(val) {
-                return !val.trim();
+                return val.trim();
             },
             message: 'title is empty'
         }
@@ -32,4 +33,19 @@ const todoSchema = new mongoose.Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Todo', todoSchema);
+todoSchema.virtual('users', {
+    ref: 'Users',
+    localField: 'authorId',
+    foreignField: '_id'
+});
+
+todoSchema.methods.toJSON = function() {
+    const obj = this.toObject();
+
+    return obj;
+};
+
+
+const Todo = mongoose.model('Todo', todoSchema);
+
+module.exports = Todo;
