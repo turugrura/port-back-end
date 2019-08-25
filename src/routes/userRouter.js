@@ -12,11 +12,15 @@ router.route('/')
     .post(userConstroller.createUser);
 
 router.route('/me')
-    .get(authController.protect, userConstroller.getMe);
+    .get(authController.protect, userConstroller.getMe)
+    .patch(authController.protect, userConstroller.updateMe);
 
 router.route('/:id')
     .get(userConstroller.getUser)
     .patch(userConstroller.updateUser)
     .delete(userConstroller.deleteUser);
+
+router.route('/:id/todos')
+    .get(userConstroller.getTodos);
 
 module.exports = router;

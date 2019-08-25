@@ -2,6 +2,25 @@ const {promisify} = require('util');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
+const sendToken = (res, user, status, token) => {
+    const cookieOption = {
+        expires: new Date(
+            Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 1000
+        ),
+        httpOnly: true
+    };
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+    res.cookie('jwt', token, cookieOption);
+
+    res.status(status).json({
+        status: 'success',
+        length: 1,
+        data: user,
+        token
+    });
+};
+
 exports.signup = async (req, res) => {
     try {
         const { username, password, title } = req.body;
@@ -12,11 +31,9 @@ exports.signup = async (req, res) => {
         });
 
         const newUser = await user.save();
-        res.status(201).json({
-            status: 'success',
-            length: 1,
-            data: newUser
-        });
+        const token = await user.generateAuthToken();
+        
+        sendToken(res, newUser, 201, token);
     } catch (error) {
         res.status(400).json({
             status: 'error',
@@ -32,17 +49,9 @@ exports.login = async (req, res) => {
             throw new Error('username or password is invalid!');
         }
         const user = await User.findByCredentials(username, password);
-        const token = await user.generateAuthToken();
+        const token = await user.generateAuthToken();        
         
-        const userNoPass = user.toObject()
-        delete userNoPass.tokens;
-        
-        res.status(200).json({
-            status: 'success',
-            length: 1,
-            data: userNoPass,
-            token
-        });
+        sendToken(res, user, 201, token);
     } catch (error) {
         res.status(400).json({
             status: 'error',

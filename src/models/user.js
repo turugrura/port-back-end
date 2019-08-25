@@ -46,6 +46,12 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
+userSchema.virtual('todos', {
+    ref: 'Todo',
+    localField: '_id',
+    foreignField: 'authorId'
+});
+
 userSchema.statics.findByCredentials = async (username, password) => {
     const user = await User.findOne({username});
     if(!user) {
@@ -59,12 +65,6 @@ userSchema.statics.findByCredentials = async (username, password) => {
 
     return user;
 };
-
-userSchema.virtual('todos', {
-    ref: 'Todos',
-    localField: '_id',
-    foreignField: 'authorId'
-});
 
 userSchema.methods.toJSON = function() {
     const user = this;

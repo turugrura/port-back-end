@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../models/user');
+const Todo = require('../models/todo');
 
 exports.getUsers = async (req, res) => {
     try {
@@ -112,9 +113,63 @@ exports.getMe = async (req, res) => {
         const user = req.user;
 
         res.status(200).json({
-            status: 'no route',
+            status: 'success',
             count: 1,
             data: user
+        });
+    } catch (error) {
+        res.status(400).json({
+            error,
+            status: error.message
+        });
+    }
+};
+
+exports.updateMe = async (req, res) => {
+    try {
+        const { title } = req.body;
+        const me = await User.findByIdAndUpdate(req.user._id, {
+            title
+        }, {
+            new: true,
+            runValidators: true
+        });
+
+        if(!me) {
+            throw new Error('Please log in again')
+        };
+
+        res.status(200).json({
+            status: 'success',
+            count: 1,
+            data: me
+        });
+    } catch (error) {
+        res.status(400).json({
+            error,
+            status: error.message
+        });
+    }
+};
+
+exports.getTodos = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findById(id).exec();
+        if(!user) {
+            throw new Error('user not found');
+        };
+        
+        const todos = await user.populate({
+            path: 'todos'
+        })
+        .execPopulate();
+
+        res.status(200).json({
+            status: 'success',
+            count: 1,
+            data: todos
         });
     } catch (error) {
         res.status(400).json({

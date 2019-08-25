@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const middleware = require('./middleware/mid');
 
@@ -12,15 +13,22 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
+const limiter = rateLimit({
+    max: 100,
+    windowMs: 60*60*1000,
+    message: 'Too many request from this IP, please try again next hour'
+});
+
 /**
  * - Middleware
  * - only test
  */
+app.use(limiter)
 app.use(middleware.printMessage1);
 app.use(middleware.printMessage2);
 
 app.use('/users', userRouter);
-app.use('/users', todoRouter);
+app.use('/todos', todoRouter);
 
 app.get('*', (req, res) => {
     res.status(404).json({

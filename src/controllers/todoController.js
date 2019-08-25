@@ -2,14 +2,29 @@ const Todo = require('../models/todo');
 
 exports.getTodos = async (req, res) => {
     try {
-        const authorId = req.params.authorId;
-        const todos = await Todo.find({
-            authorId
-        });
+        const todos = await Todo.find();
         
         res.status(200).json({
             status: 'success',
             count: todos.length,
+            data: todos
+        });
+    } catch (error) {
+        res.status(400).json({
+            status: 'fail',
+            error: error.message
+        });
+    }
+};
+
+exports.getTodo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const todos = await Todo.findById(id);
+        
+        res.status(200).json({
+            status: 'success',
+            count: 1,
             data: todos
         });
     } catch (error) {
@@ -78,12 +93,12 @@ exports.deleteTodo = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const todo = await Todo.deleteOne({ _id: id });
+        const todo = await Todo.findByIdAndDelete({ _id: id });
         
-        if(todo.deletedCount == 0) {
-            throw new Error('no todo was deleted');
-        };
-        
+        // if(todo.deletedCount == 0) {
+        //     throw new Error('no todo was deleted');
+        // };
+        console.log(todo)
         res.status(200).json({
             status: 'success',
             count: todo.deleteCount,
