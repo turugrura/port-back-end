@@ -110,7 +110,7 @@ exports.deleteUser = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        const user = req.user;
+        const user = await req.user.populate('todos');
 
         res.status(200).json({
             status: 'success',

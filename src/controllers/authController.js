@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
         const user = await User.findByCredentials(username, password);
         const token = await user.generateAuthToken();        
         
-        sendToken(res, user, 201, token);
+        sendToken(res, user, 200, token);
     } catch (error) {
         res.status(400).json({
             status: 'error',
