@@ -74,7 +74,10 @@ exports.protect = async (req, res, next) => {
 
         // check user exist
         const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-        const currentUser = await User.findById(decoded.id);
+        const currentUser = await User.findById(decoded.id).populate({
+            path: 'todos',
+            select: 'topic content createdAt updatedAt'
+        });
         if(!currentUser) {
             throw new Error('The user not exist');
         };

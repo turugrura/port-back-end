@@ -108,9 +108,9 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-exports.getMe = async (req, res) => {
+exports.getMe = (req, res) => {
     try {
-        const user = await req.user.populate('todos');
+        const user = req.user;
 
         res.status(200).json({
             status: 'success',
@@ -156,20 +156,17 @@ exports.getTodos = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const user = await User.findById(id).exec();
+        const user = await User.findById(id).populate({
+            path: 'todos'
+        });
         if(!user) {
             throw new Error('user not found');
         };
-        
-        const todos = await user.populate({
-            path: 'todos'
-        })
-        .execPopulate();
 
         res.status(200).json({
             status: 'success',
             count: 1,
-            data: todos
+            data: user
         });
     } catch (error) {
         res.status(400).json({

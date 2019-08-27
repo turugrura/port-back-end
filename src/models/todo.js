@@ -30,7 +30,10 @@ const todoSchema = new mongoose.Schema({
         }
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    id: false
 });
 
 todoSchema.methods.toJSON = function() {
@@ -42,7 +45,7 @@ todoSchema.methods.toJSON = function() {
 todoSchema.pre(/^find/, function(next){
     this.populate({
         path: 'authorId',
-        select: '-__v -tokens -password -passwordChangedAt'
+        select: 'username'
     });
 
     next();

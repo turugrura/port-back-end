@@ -43,17 +43,20 @@ const userSchema = new mongoose.Schema({
         }
     }]
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    id: false
 });
 
 userSchema.virtual('todos', {
     ref: 'Todo',
-    localField: '_id',
-    foreignField: 'authorId'
+    foreignField: 'authorId',
+    localField: '_id'
 });
 
 userSchema.statics.findByCredentials = async (username, password) => {
-    const user = await User.findOne({username});
+    const user = await User.findOne({username}).populate('todos');
     if(!user) {
         throw new Error('username not found');
     }
