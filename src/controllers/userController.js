@@ -1,35 +1,40 @@
 const mongoose = require('mongoose');
+const { handleError } = require('./handleError');
 const User = require('../models/user');
-const Todo = require('../models/todo');
 
 exports.getUsers = async (req, res) => {
     try {
         const users = await User.find();
+
         res.status(200).json({
             status: 'success',
             count: users.length,
             data: users
         });
     } catch (error) {
-        res.status(400).json({
-            error: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
 exports.getUser = async (req, res) => {
     try {
-        const _id = req.params.id;
-        const user = await User.findOne({ _id });
+        const { id } = req.params;
+        const user = await User.findById(id)
+            .populate({
+                path: 'todos',
+                select: 'topic content status'
+            })
+            .populate({
+                path: 'posts',
+                select: 'content like'
+            });
+
         res.status(200).json({
             status: 'success',
-            count: 1,
             data: user
         });
     } catch (error) {
-        res.status(400).json({
-            error: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
@@ -46,26 +51,23 @@ exports.createUser = async (req, res) => {
         const newUser = await user.save();
         res.status(201).json({
             status: 'success',
-            count: 1,
             data: newUser
         });
     } catch (error) {
-        res.status(400).json({
-            error: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
 exports.updateUser = async (req, res) => {
     try {
-        const allowUpdates = ['password', 'title'];
+        const allowUpdates = ['password', 'title', 'role'];
         const updateField = Object.keys(req.body).filter( key => allowUpdates.includes(key));
         if(updateField.length === 0) {
             throw new Error('no data that allowed to update');
         };
         
-        const _id = mongoose.Types.ObjectId(req.params.id);
-        const user = await User.findOne({ _id });
+        const { id } = req.params;
+        const user = await User.findById(id);
         if(!user) {
             throw new Error('user not found');
         };
@@ -77,51 +79,42 @@ exports.updateUser = async (req, res) => {
         
         res.status(200).json({
             status: 'success',
-            count: 1,
             data: updateUser
         });
     } catch (error) {
-        res.status(400).json({
-            status: 'error',
-            error: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
 exports.deleteUser = async (req, res) => {
     try {
-        const _id = mongoose.Types.ObjectId(req.params.id);
-        const delUser = await User.deleteOne({ _id });
-        if(!delUser || delUser.deletedCount === 0) {
-            throw new Error().message = 'No user delete'
-        }
+        const { id } = req.params;
+        const delUser = await User.findByIdAndDelete(id);
+        if(!delUser) {
+            throw new Error('user not found')
+        };
+        // TODO transaction
         res.status(200).json({
             status: 'success',
-            count: delUser.ok,
             data: []
         });
     } catch (error) {
-        res.status(400).json({
-            error,
-            status: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
-exports.getMe = (req, res) => {
+exports.getMe = async (req, res, next) => {
     try {
-        const user = req.user;
+        // const user = await req.user;
+        req.params.id = req.user._id;
 
-        res.status(200).json({
-            status: 'success',
-            count: 1,
-            data: user
-        });
+        next();
+        // res.status(200).json({
+        //     status: 'success',
+        //     data: user
+        // });
     } catch (error) {
-        res.status(400).json({
-            error,
-            status: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
@@ -136,23 +129,38 @@ exports.updateMe = async (req, res) => {
         });
 
         if(!me) {
-            throw new Error('Please log in again')
+            handleError(res, 401, 'Please login again');
         };
 
         res.status(200).json({
             status: 'success',
-            count: 1,
             data: me
         });
     } catch (error) {
-        res.status(400).json({
-            error,
-            status: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
-exports.getTodos = async (req, res) => {
+exports.deleteMe = async (req, res) => {
+    try {
+        const deletedMe = await User.findByIdAndUpdate(req.user._id, {
+            active: false,
+            token: ''
+        });
+        if(!deletedMe) {
+            handleError(res, 401, 'Please login again');
+        };
+
+        res.status(200).json({
+            status: 'success',
+            data: deletedMe
+        });
+    } catch (error) {
+        handleError(res, 400, error.message);
+    }
+};
+
+exports.getUserTodos = async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -165,13 +173,23 @@ exports.getTodos = async (req, res) => {
 
         res.status(200).json({
             status: 'success',
-            count: 1,
             data: user
         });
     } catch (error) {
-        res.status(400).json({
-            error,
-            status: error.message
+        handleError(res, 400, error.message);
+    }
+};
+
+exports.getUsersTodos = async (req, res) => {
+    try {
+        const users = await User.find().populate('todos');
+
+        res.status(200).json({
+            status: 'success',
+            count: users.length,
+            data: users
         });
+    } catch (error) {
+        handleError(res, 400, error.message);
     }
 };

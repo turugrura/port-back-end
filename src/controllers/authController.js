@@ -1,6 +1,7 @@
 const {promisify} = require('util');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
+const { handleError } = require('./handleError');
 
 const sendToken = (res, user, status, token) => {
     const cookieOption = {
@@ -35,10 +36,7 @@ exports.signup = async (req, res) => {
         
         sendToken(res, newUser, 201, token);
     } catch (error) {
-        res.status(400).json({
-            status: 'error',
-            error: error.message
-        });
+        handleError(res, 400, error.message);
     }
 };
 
@@ -53,10 +51,25 @@ exports.login = async (req, res) => {
         
         sendToken(res, user, 200, token);
     } catch (error) {
-        res.status(400).json({
-            status: 'error',
-            error: error.message
-        })
+        handleError(res, 400, error.message);
+    }
+};
+
+exports.logout = async (req, res) => {
+    try {
+        const me = await User.findByIdAndUpdate(req.user._id, {
+            token: ''
+        });
+        if(!me) {
+            handleError(res, 401, 'Please login again');            
+        };
+
+        res.status(200).json({
+            status: 'success',
+            data: []
+        });
+    } catch (error) {
+        handleError(res, 400, error.message);
     }
 };
 
@@ -74,12 +87,12 @@ exports.protect = async (req, res, next) => {
 
         // check user exist
         const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-        const currentUser = await User.findById(decoded.id).populate({
-            path: 'todos',
-            select: 'topic content createdAt updatedAt'
+        const currentUser = await User.findOne({
+            _id: decoded.id,
+            token
         });
         if(!currentUser) {
-            throw new Error('The user not exist');
+            throw new Error('Please login again');
         };
 
         // check password not change
@@ -92,9 +105,6 @@ exports.protect = async (req, res, next) => {
         
         next();
     } catch (error) {
-        res.status(401).json({
-            status: 'fail',
-            error: error.message
-        });
+        handleError(res, 401, error.message);
     }    
 };

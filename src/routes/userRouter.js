@@ -1,26 +1,43 @@
 const express = require('express');
 const router = express.Router();
 
-const authController = require('../controllers/authController');
-const userConstroller = require('../controllers/userController');
+const { signup,
+        login,
+        logout,
+        protect} = require('../controllers/authController');
+const { getUser,
+        getUsers,
+        createUser, 
+        updateUser, 
+        deleteUser, 
+        getMe, 
+        updateMe,
+        deleteMe,
+        getUserTodos, 
+        getUsersTodos } = require('../controllers/userController');
 
-router.post('/signup', authController.signup);
-router.post('/login', authController.login);
+router.post('/signup', signup);
+router.post('/login', login);
+router.post('/logout', protect, logout);
 
 router.route('/')
-    .get(userConstroller.getUsers)
-    .post(userConstroller.createUser);
+    .get(getUsers)
+    .post(createUser);
+
+router.route('/todos')
+    .get(getUsersTodos);    
 
 router.route('/me')
-    .get(authController.protect, userConstroller.getMe)
-    .patch(authController.protect, userConstroller.updateMe);
+    .get(protect, getMe, getUser)
+    .patch(protect, updateMe)
+    .delete(protect, deleteMe);
 
 router.route('/:id')
-    .get(userConstroller.getUser)
-    .patch(userConstroller.updateUser)
-    .delete(userConstroller.deleteUser);
+    .get(getUser)
+    .patch(updateUser)
+    .delete(deleteUser);
 
 router.route('/:id/todos')
-    .get(userConstroller.getTodos);
+    .get(getUserTodos);
 
 module.exports = router;

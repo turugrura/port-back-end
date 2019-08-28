@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
             },
             message: username => `there are space in '${username.value}'`
         }
-     },
+    },
     password: {
         type: String,
         required: [true, 'password required!'],
@@ -29,19 +29,26 @@ const userSchema = new mongoose.Schema({
     },
     title: {
         type: String,
+        maxlength: 50,
         default: 'no title'
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'head', 'admin'],
         default: 'user'
     },
-    tokens: [{
-        token: {
-            type: String,
-            require: true
-        }
-    }]
+    active: {
+        type: Boolean,
+        default: true
+    },
+    image: {
+        type: String,
+        default: ''
+    },
+    token: {
+        type: String,
+        require: true
+    }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
@@ -51,20 +58,26 @@ const userSchema = new mongoose.Schema({
 
 userSchema.virtual('todos', {
     ref: 'Todo',
-    foreignField: 'authorId',
+    foreignField: 'author',
+    localField: '_id'
+});
+
+userSchema.virtual('posts', {
+    ref: 'Post',
+    foreignField: 'author',
     localField: '_id'
 });
 
 userSchema.statics.findByCredentials = async (username, password) => {
-    const user = await User.findOne({username}).populate('todos');
+    const user = await User.findOne({ username, active: true });
     if(!user) {
         throw new Error('username not found');
-    }
+    };
 
     const isPassMatch = await bcrypt.compare(password, user.password);
     if(!isPassMatch) {
         throw new Error('password is incorrect!');
-    }
+    };
 
     return user;
 };
@@ -75,7 +88,7 @@ userSchema.methods.toJSON = function() {
 
     delete userObject.password;
     delete userObject.passwordChangedAt;
-    delete userObject.tokens;
+    delete userObject.token;
 
     return userObject;
 };
@@ -85,7 +98,7 @@ userSchema.methods.generateAuthToken = async function() {
     const token = jwt.sign({id}, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
     });
-    this.tokens = this.tokens.concat({token});
+    this.token = token;
 
     await this.save();
     

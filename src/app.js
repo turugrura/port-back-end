@@ -11,6 +11,7 @@ const middleware = require('./middleware/mid');
 
 const userRouter = require('./routes/userRouter');
 const todoRouter = require('./routes/todoRouter');
+const postRouter = require('./routes/postRouter');
 
 // Set security HTTP headers
 app.use(helmet());
@@ -50,6 +51,7 @@ app.use(middleware.printMessage1);
 // Router
 app.use('/users', userRouter);
 app.use('/todos', todoRouter);
+app.use('/posts', postRouter)
 
 app.get('*', (req, res) => {
     res.status(404).json({

@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
 const todoSchema = new mongoose.Schema({
-    authorId: {
+    author: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Todo must belong to a user.'],
         ref: 'User'
     },
     topic: {
         type: String,
-        required: true,
+        required: [true, 'Todo must have the topic'],
         maxlength: [100, 'Topic must less than or equal 100 character'],
         unique: true,
         validate: {
@@ -28,6 +28,12 @@ const todoSchema = new mongoose.Schema({
             },
             message: 'Title is empty'
         }
+    },
+    status: {
+        type: String,
+        enum: ['none', 'undo', 'doing', 'done'],
+        default: 'none',
+        required: true
     }
 }, {
     timestamps: true,
@@ -42,14 +48,14 @@ todoSchema.methods.toJSON = function() {
     return obj;
 };
 
-todoSchema.pre(/^find/, function(next){
-    this.populate({
-        path: 'authorId',
-        select: 'username'
-    });
+// todoSchema.pre(/^find/, function(next){
+//     this.populate({
+//         path: 'author',
+//         select: 'username'
+//     });
 
-    next();
-});
+//     next();
+// });
 
 
 const Todo = mongoose.model('Todo', todoSchema);
