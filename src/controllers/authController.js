@@ -1,7 +1,7 @@
 const {promisify} = require('util');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const { handleError } = require('./handleError');
+const { handlerError, handlerSuccess } = require('./handlerResponse');
 
 const sendToken = (res, user, status, token) => {
     const cookieOption = {
@@ -36,7 +36,7 @@ exports.signup = async (req, res) => {
         
         sendToken(res, newUser, 201, token);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
         
         sendToken(res, user, 200, token);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -61,7 +61,7 @@ exports.logout = async (req, res) => {
             token: ''
         });
         if(!me) {
-            handleError(res, 401, 'Please login again');            
+            handlerError(res, 401, 'Please login again');            
         };
 
         res.status(200).json({
@@ -69,7 +69,7 @@ exports.logout = async (req, res) => {
             data: []
         });
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -105,6 +105,6 @@ exports.protect = async (req, res, next) => {
         
         next();
     } catch (error) {
-        handleError(res, 401, error.message);
+        handlerError(res, 401, error.message);
     }    
 };

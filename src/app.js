@@ -5,13 +5,14 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 
 const middleware = require('./middleware/mid');
 
 const userRouter = require('./routes/userRouter');
 const todoRouter = require('./routes/todoRouter');
 const postRouter = require('./routes/postRouter');
+const commentRouter = require('./routes/commentRouter');
 
 // Set security HTTP headers
 app.use(helmet());
@@ -25,12 +26,13 @@ const limiter = rateLimit({
 app.use(limiter)
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 // parse application/json
-app.use(bodyParser.json({
-    limit: '10kb'
-}));
+// app.use(bodyParser.json({
+//     limit: '10kb'
+// }));
+app.use(express.json());
 
 // against NoSQL query injection (filter $ . out of params.body)
 app.use(mongoSanitize());
@@ -51,9 +53,10 @@ app.use(middleware.printMessage1);
 // Router
 app.use('/users', userRouter);
 app.use('/todos', todoRouter);
-app.use('/posts', postRouter)
+app.use('/posts', postRouter);
+app.use('/comments', commentRouter);
 
-app.get('*', (req, res) => {
+app.all('*', (req, res) => {
     res.status(404).json({
         status: 'fail',
         error: 'page not found'

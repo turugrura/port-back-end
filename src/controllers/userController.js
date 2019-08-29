@@ -1,18 +1,15 @@
-const mongoose = require('mongoose');
-const { handleError } = require('./handleError');
 const User = require('../models/user');
+
+const { handlerError, handlerSuccess } = require('./handlerResponse');
+const { getDataAllowedSave } = require('../utils/manipulateReq');
 
 exports.getUsers = async (req, res) => {
     try {
         const users = await User.find();
 
-        res.status(200).json({
-            status: 'success',
-            count: users.length,
-            data: users
-        });
+        handlerSuccess(res, 200, users, users.length);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -29,60 +26,42 @@ exports.getUser = async (req, res) => {
                 select: 'content like'
             });
 
-        res.status(200).json({
-            status: 'success',
-            data: user
-        });
+        handlerSuccess(res, 200, user);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
 exports.createUser = async (req, res) => {
     try {
-        const { username, password, title, role } = req.body;
-        const user = new User({
-            username,
-            password,
-            title,
-            role
-        });
+        const allowField = ['username', 'password', 'title', 'role', 'image'];
+        const data = getDataAllowedSave(allowField, req.body);
+        // const { username, password, title, role } = req.body;
+        const user = new User(data);
 
         const newUser = await user.save();
-        res.status(201).json({
-            status: 'success',
-            data: newUser
-        });
+        handlerSuccess(res, 201, newUser);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
 exports.updateUser = async (req, res) => {
     try {
-        const allowUpdates = ['password', 'title', 'role'];
-        const updateField = Object.keys(req.body).filter( key => allowUpdates.includes(key));
-        if(updateField.length === 0) {
-            throw new Error('no data that allowed to update');
-        };
+        const allowedSave = ['title', 'role', 'images'];
+        const data = getDataAllowedSave(allowedSave, req.body);
         
         const { id } = req.params;
-        const user = await User.findById(id);
+        const user = await User.findByIdAndUpdate(id, data, {
+            new: true
+        });
         if(!user) {
             throw new Error('user not found');
         };
 
-        updateField.forEach( key => {
-            user[key] = req.body[key]
-        });
-        const updateUser = await user.save();
-        
-        res.status(200).json({
-            status: 'success',
-            data: updateUser
-        });
+        handlerSuccess(res, 200, user);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -93,51 +72,41 @@ exports.deleteUser = async (req, res) => {
         if(!delUser) {
             throw new Error('user not found')
         };
+
         // TODO transaction
-        res.status(200).json({
-            status: 'success',
-            data: []
-        });
+        handlerSuccess(res, 200, []);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
 exports.getMe = async (req, res, next) => {
     try {
-        // const user = await req.user;
         req.params.id = req.user._id;
 
         next();
-        // res.status(200).json({
-        //     status: 'success',
-        //     data: user
-        // });
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
 exports.updateMe = async (req, res) => {
     try {
-        const { title } = req.body;
-        const me = await User.findByIdAndUpdate(req.user._id, {
-            title
-        }, {
+        const allowedSave = ['title', 'role', 'images'];
+        const data = getDataAllowedSave(allowedSave, req.body);
+        
+        const me = await User.findByIdAndUpdate(req.user._id, data, {
             new: true,
             runValidators: true
         });
 
         if(!me) {
-            handleError(res, 401, 'Please login again');
+            handlerError(res, 401, 'Please login again');
         };
 
-        res.status(200).json({
-            status: 'success',
-            data: me
-        });
+        handlerSuccess(res, 200, me);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -146,17 +115,16 @@ exports.deleteMe = async (req, res) => {
         const deletedMe = await User.findByIdAndUpdate(req.user._id, {
             active: false,
             token: ''
+        }, {
+            new: true
         });
         if(!deletedMe) {
-            handleError(res, 401, 'Please login again');
+            handlerError(res, 401, 'Please login again');
         };
 
-        res.status(200).json({
-            status: 'success',
-            data: deletedMe
-        });
+        handlerSuccess(res, 200, deletedMe);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -171,12 +139,9 @@ exports.getUserTodos = async (req, res) => {
             throw new Error('user not found');
         };
 
-        res.status(200).json({
-            status: 'success',
-            data: user
-        });
+        handlerSuccess(res, 200, user);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -184,12 +149,8 @@ exports.getUsersTodos = async (req, res) => {
     try {
         const users = await User.find().populate('todos');
 
-        res.status(200).json({
-            status: 'success',
-            count: users.length,
-            data: users
-        });
+        handlerSuccess(res, 200, users, users.length);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };

@@ -11,6 +11,9 @@ const {
     updatePost,
     deletePost
 } = require('../controllers/postController');
+const commentRouter = require('./commentRouter');
+
+router.use('/:postId/comments', commentRouter);
 
 router.route('/')
     .get(getPosts)

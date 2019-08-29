@@ -1,67 +1,54 @@
 const Todo = require('../models/todo');
-const { handleError } = require('./handleError');
+const User = require('../models/user');
+
+const { handlerError, handlerSuccess } = require('./handlerResponse');
+const { getDataAllowedSave } = require('../utils/manipulateReq');
 
 exports.getTodos = async (req, res) => {
     try {
         const todos = await Todo.find();
-        
-        res.status(200).json({
-            status: 'success',
-            count: todos.length,
-            data: todos
-        });
+                
+        handlerSuccess(res, 200, todos, todos.length);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
 exports.getTodo = async (req, res) => {
     try {
         const { id } = req.params;
-        const todos = await Todo.findById(id);
+        const todo = await Todo.findById(id);
         
-        res.status(200).json({
-            status: 'success',
-            count: 1,
-            data: todos
-        });
+        handlerSuccess(res, 200, todo);
     } catch (error) {
-        handleError(res, 400, error.message);        
+        handlerError(res, 400, error.message);        
     }
 };
 
 exports.createTodo = async (req, res) => {
     try {
         const author = req.user._id;
-        const { topic, content } = req.body;
-        const todo = new Todo({
+        const allowedField = ['topic', 'content'];
+        const data = getDataAllowedSave(allowedField, req.body);
+
+        const todo = await new Todo({
             author,
-            topic,
-            content
-        });
+            ...data
+        }).save();
 
-        const newTodo = await todo.save();
-
-        res.status(201).json({
-            status: 'success',
-            count: 1,
-            data: newTodo
-        });
+        handlerSuccess(res, 201, todo);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
 exports.updateTodo = async (req, res) => {
     try {
         const { id } = req.params;
-        const { topic, content, status } = req.body;
-
-        const todo = await Todo.findByIdAndUpdate(id, {
-            topic,
-            content,
-            status
-        }, {
+        const allowedField = ['topic','content','status'];
+        const data = getDataAllowedSave(allowedField, req.body);
+        console.log(data)
+        const todo = await Todo.findByIdAndUpdate(id, data, {
             runValidators: true,
             new: true
         });
@@ -69,13 +56,9 @@ exports.updateTodo = async (req, res) => {
             throw new Error('todo not found');
         };
 
-        res.status(200).json({
-            status: 'success',
-            count: 1,
-            data: todo
-        });
+        handlerSuccess(res, 200, todo);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -88,12 +71,8 @@ exports.deleteTodo = async (req, res) => {
             throw new Error('todo not found');
         };
         
-        res.status(200).json({
-            status: 'success',
-            count: todo.deleteCount,
-            data: []
-        });
+        handlerSuccess(res, 200, []);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
