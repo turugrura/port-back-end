@@ -9,10 +9,10 @@ const hpp = require('hpp');
 
 const middleware = require('./middleware/mid');
 
-const userRouter = require('./routes/userRouter');
-const todoRouter = require('./routes/todoRouter');
-const postRouter = require('./routes/postRouter');
-const commentRouter = require('./routes/commentRouter');
+const userRouter = require('./routers/userRouter');
+const todoRouter = require('./routers/todoRouter');
+const postRouter = require('./routers/postRouter');
+const commentRouter = require('./routers/commentRouter');
 
 // Set security HTTP headers
 app.use(helmet());

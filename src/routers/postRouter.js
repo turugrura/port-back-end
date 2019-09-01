@@ -1,5 +1,7 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router({
+    mergeParams: true
+});
 
 const {
     protect
@@ -13,13 +15,14 @@ const {
 } = require('../controllers/postController');
 const commentRouter = require('./commentRouter');
 
+router.use('/comments', commentRouter);
 router.use('/:postId/comments', commentRouter);
 
 router.route('/')
     .get(getPosts)
     .post(protect, createPost);
 
-router.route('/:id')
+router.route('/:postId')
     .get(getPost)
     .patch(protect, updatePost)
     .delete(protect, deletePost);

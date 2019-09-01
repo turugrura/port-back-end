@@ -15,16 +15,8 @@ exports.getUsers = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        const user = await User.findById(id)
-            .populate({
-                path: 'todos',
-                select: 'topic content status'
-            })
-            .populate({
-                path: 'posts',
-                select: 'content like'
-            });
+        const { userId } = req.params;
+        const user = await User.find({ _id: userId });
 
         handlerSuccess(res, 200, user);
     } catch (error) {
@@ -38,7 +30,7 @@ exports.createUser = async (req, res) => {
         const data = getDataAllowedSave(allowField, req.body);
         // const { username, password, title, role } = req.body;
         const user = new User(data);
-
+        
         const newUser = await user.save();
         handlerSuccess(res, 201, newUser);
     } catch (error) {
@@ -51,12 +43,12 @@ exports.updateUser = async (req, res) => {
         const allowedSave = ['title', 'role', 'images'];
         const data = getDataAllowedSave(allowedSave, req.body);
         
-        const { id } = req.params;
-        const user = await User.findByIdAndUpdate(id, data, {
+        const { userId } = req.params;
+        const user = await User.findByIdAndUpdate(userId, data, {
             new: true
         });
         if(!user) {
-            throw new Error('user not found');
+            handlerError(res, 400, 'user not found');
         };
 
         handlerSuccess(res, 200, user);
@@ -67,10 +59,10 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        const delUser = await User.findByIdAndDelete(id);
+        const { userId } = req.params;
+        const delUser = await User.findByIdAndDelete(userId);
         if(!delUser) {
-            throw new Error('user not found')
+            handlerError(res, 400, 'user not found');
         };
 
         // TODO transaction
@@ -123,33 +115,6 @@ exports.deleteMe = async (req, res) => {
         };
 
         handlerSuccess(res, 200, deletedMe);
-    } catch (error) {
-        handlerError(res, 400, error.message);
-    }
-};
-
-exports.getUserTodos = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const user = await User.findById(id).populate({
-            path: 'todos'
-        });
-        if(!user) {
-            throw new Error('user not found');
-        };
-
-        handlerSuccess(res, 200, user);
-    } catch (error) {
-        handlerError(res, 400, error.message);
-    }
-};
-
-exports.getUsersTodos = async (req, res) => {
-    try {
-        const users = await User.find().populate('todos');
-
-        handlerSuccess(res, 200, users, users.length);
     } catch (error) {
         handlerError(res, 400, error.message);
     }

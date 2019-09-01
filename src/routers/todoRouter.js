@@ -1,14 +1,22 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router({
+    mergeParams: true
+});
 
-const { createTodo, updateTodo, deleteTodo , getTodo, getTodos} = require('../controllers/todoController');
+const { 
+    createTodo, 
+    updateTodo, 
+    deleteTodo, 
+    getTodo, 
+    getTodos
+} = require('../controllers/todoController');
 const { protect } = require('../controllers/authController');
 
 router.route('/')
     .get(getTodos)
     .post(protect, createTodo);
 
-router.route('/:id')
+router.route('/:todoId')
     .get(getTodo)
     .patch(protect, updateTodo)
     .delete(protect, deleteTodo);

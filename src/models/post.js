@@ -11,16 +11,21 @@ const postSchema = new mongoose.Schema({
         maxlength: 200,
         required: [true, 'Post must have content']
     },
-    like: {
-        type: Number,
-        default: 0
-    }
+    like: [{
+        type: mongoose.Schema.Types.ObjectId
+    }]
 }, {
     timestamps: { createdAt: true, updatedAt: false },
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
     versionKey: false,
     id: false
+});
+
+postSchema.virtual('comments', {
+    ref: 'Comment',
+    foreignField: 'post',
+    localField: '_id'
 });
 
 const Post = mongoose.model('Post', postSchema);

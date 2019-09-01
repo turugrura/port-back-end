@@ -17,7 +17,7 @@ router.route('/')
     .get(getComments)
     .post(protect, checkPostExist, createComment);
 
-router.route('/:id')
+router.route('/:commentId')
     .get(getComment)
     .patch(protect, checkPostExist, updateComment)
     .delete(protect, checkPostExist, deleteComment);

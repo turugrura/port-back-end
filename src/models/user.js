@@ -68,6 +68,12 @@ userSchema.virtual('posts', {
     localField: '_id'
 });
 
+userSchema.virtual('comments', {
+    ref: 'Comment',
+    foreignField: 'author',
+    localField: '_id'
+});
+
 userSchema.statics.findByCredentials = async (username, password) => {
     const user = await User.findOne({ username, active: true });
     if(!user) {

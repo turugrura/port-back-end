@@ -1,26 +1,112 @@
-const Comment = require('../models/commentModel');
+const User = require('../models/user');
 const Post = require('../models/post');
+const Comment = require('../models/commentModel');
 
-const { handleError, handleSuccess } = require('./handlerResponse');
+const { handlerError, handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');
-
-const getComments = async (req, res) => {
-    try {
-        const comments = await Comment.find();
-
-        handleSuccess(res, 200, comments, comments.length);
-    } catch (error) {
-        handleError(res, 400, error.message);
-    }
-};
 
 const getComment = async (req, res) => {
     try {
-        const comment = await Comment.findById(req.params.id);
+        // const comment = await Comment.findById(req.params.commentId);
 
-        handleSuccess(res, 200, comment);
+        const { userId, postId, commentId } = req.params;
+        let comment;
+        let filter = { user: {}, post: {}};
+        if(userId) filter.user._id = userId;
+        if(postId) filter.post._id = postId;
+        
+        if(req.baseUrl.includes('users')) {
+            if(req.baseUrl.includes('posts')) {
+                comment = await User.find(filter.user).populate({
+                    path: 'posts',
+                    match: filter.post,
+                    populate: {
+                        path: 'comments',
+                        match: { _id: commentId }
+                    }
+                });
+            } else {
+                comment = await User.find(filter.user).populate({
+                    path: 'comments',
+                    match: { _id: commentId }
+                });
+            }
+        } else {
+            if(req.baseUrl.includes('posts')) {
+                comment = await Post.find(filter.post).populate({
+                    path: 'comments',
+                    match: { _id: commentId }
+                });
+            } else {
+                comment = await Comment.find({ _id: commentId });
+            }
+        }
+
+        handlerSuccess(res, 200, comment);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
+    }
+};
+
+const getComments = async (req, res) => {
+    try {
+        // const comments = await Comment.find();
+        
+        const { userId, postId } = req.params;
+
+        let comments;
+        let count = 0;
+        let filter = { user: {}, post: {}};
+        if(userId) filter.user._id = userId;
+        if(postId) filter.post._id = postId;
+
+        // users/userId/posts/postId/comments
+        if(req.baseUrl.includes('users')) {
+            if(req.baseUrl.includes('posts')) {
+                // users/userId/posts/postId/comments
+                comments = await User.find(filter.user).populate({
+                    path: 'posts',
+                    match: {
+                        ...filter.post
+                    },
+                    populate: { path: 'comments' }
+                });
+
+                comments.forEach( user => {
+                    user.posts.forEach( post => {
+                        count += post.comments.length;
+                    });
+                });
+            } else {
+                // users/userId/comments
+                comments = await User.find(filter.user).populate({
+                    path: 'comments'
+                });
+
+                comments.forEach( user => {
+                    count += user.comments.length;
+                });
+            }
+        } else {
+            if(req.baseUrl.includes('posts')) {
+                // posts/postId/comments
+                comments = await Post.find(filter.post).populate({
+                    path: 'comments'
+                });
+
+                comments.forEach( post => {
+                    count += post.comments.length;
+                });
+            } else {
+                // comments
+                comments = await Comment.find();
+                count = comments.length;
+            }
+        }
+
+        handlerSuccess(res, 200, comments, count);
+    } catch (error) {
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -36,12 +122,12 @@ const createComment = async (req, res) => {
             post: postId
         }).save();
         if(!newComment) {
-            throw new Error('no comment was created');
+            handlerError(res, 400, 'no comment was created');
         }
 
-        handleSuccess(res, 201, newComment);
+        handlerSuccess(res, 201, newComment);
     } catch (error) {
-        handleError(res, 400, error.message);
+        handlerError(res, 400, error.message);
     }
 };
 
@@ -50,29 +136,29 @@ const updateComment = async (req, res) => {
         const allowedSave = ['content'];
         const data = getDataAllowedSave(allowedSave, req.body);
         
-        const updatedComment = await Comment.findByIdAndUpdate(req.params.id, data, {
+        const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, data, {
             new: true
         });
         if(!updatedComment) {
-            throw new Error('comment not found')
+            handlerError(res, 400, 'comment not found');
         };
 
-        handleSuccess(res, 200, updatedComment);
+        handlerSuccess(res, 200, updatedComment);
     } catch (error) {
-        handleError(res, 400, error.message);        
+        handlerError(res, 400, error.message);
     }
 };
 
 const deleteComment = async (req, res) => {
     try {
-        const deletedComment = await Comment.findByIdAndDelete(req.params.id);
+        const deletedComment = await Comment.findByIdAndDelete(req.params.commentId);
         if(!deletedComment) {
-            throw new Error('comment not found')
+            handlerError(res, 400, 'comment not found');
         };
 
-        handleSuccess(res, 200, []);
+        handlerSuccess(res, 200, []);
     } catch (error) {
-        handleError(res, 400, error.message);        
+        handlerError(res, 400, error.message);
     }
 };
 
