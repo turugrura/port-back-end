@@ -5,7 +5,6 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-// const bodyParser = require('body-parser');
 
 const middleware = require('./middleware/mid');
 
@@ -27,12 +26,10 @@ app.use(limiter)
 
 // parse application/x-www-form-urlencoded
 // app.use(bodyParser.urlencoded({ extended: true }));
-
 // parse application/json
-// app.use(bodyParser.json({
-//     limit: '10kb'
-// }));
-app.use(express.json());
+app.use(express.json({
+    limit: '10kb'
+}));
 
 // against NoSQL query injection (filter $ . out of params.body)
 app.use(mongoSanitize());

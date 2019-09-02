@@ -6,7 +6,13 @@
   "scripts": {
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
-    "test": "jest"
+    "test": "jest --watchAll"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "./test/setup.js"
+    ]
   },
   "author": "",
   "license": "ISC",
@@ -24,6 +30,7 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "supertest": "^4.0.2"
   }
 }
