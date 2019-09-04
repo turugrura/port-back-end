@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll --runInBand"
   },
   "jest": {
     "testEnvironment": "node",

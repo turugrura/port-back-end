@@ -78,12 +78,17 @@ exports.updateTodo = async (req, res) => {
         const allowedField = ['topic','content','status'];
         const data = getDataAllowedSave(allowedField, req.body);
         
+        const todo = await Todo.findById(todoId);
+        if(todo.author.toString() != req.user._id) {
+            return handlerError(res, 401, 'todo is not your');
+        };
+        
         const updatedTodo = await Todo.findByIdAndUpdate(todoId, data, {
             runValidators: true,
             new: true
         });
         if(!updatedTodo) {
-            handlerError(res, 400, 'todo not found');
+            return handlerError(res, 400, 'todo not found');
         };
 
         handlerSuccess(res, 200, updatedTodo);
@@ -96,9 +101,14 @@ exports.deleteTodo = async (req, res) => {
     try {
         const { todoId } = req.params;
 
+        const todoCheck = await Todo.findById(todoId);
+        if(todoCheck.author.toString() != req.user._id) {
+            return handlerError(res, 401, 'todo is not your');
+        };
+
         const todo = await Todo.findByIdAndDelete(todoId);
         if(!todo) {
-            handlerError(res, 400, 'todo not found');
+            return handlerError(res, 400, 'todo not found');
         };
         
         handlerSuccess(res, 200, []);

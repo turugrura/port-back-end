@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const todoSchema = new mongoose.Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,
+        trim: true,
         required: [true, 'Todo must belong to a user.'],
         ref: 'User'
     },
@@ -21,19 +22,13 @@ const todoSchema = new mongoose.Schema({
     content: {
         type: String,
         required: [true, 'Todo must have the content'],
-        maxlength: [500, 'Content must less than or equal 500 character'],
-        validate: {
-            validator: function(val) {
-                return val.trim();
-            },
-            message: 'Title is empty'
-        }
+        maxlength: [500, 'Content must less than or equal 500 character']
     },
     status: {
         type: String,
         enum: ['none', 'undo', 'doing', 'done'],
         default: 'none',
-        required: true
+        required: [true, 'Content must have status']
     }
 }, {
     timestamps: true,

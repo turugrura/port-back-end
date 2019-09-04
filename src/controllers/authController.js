@@ -44,7 +44,7 @@ exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
         if(!username || !password) {
-            throw new Error('username or password is invalid!');
+            return handlerError(res, 400, 'username or password is invalid!');
         }
         const user = await User.findByCredentials(username, password);
         const token = await user.generateAuthToken();        
@@ -61,7 +61,7 @@ exports.logout = async (req, res) => {
             token: ''
         });
         if(!me) {
-            handlerError(res, 401, 'Please login again');            
+            return handlerError(res, 401, 'Please login again');            
         };
 
         res.status(200).json({
@@ -82,7 +82,7 @@ exports.protect = async (req, res, next) => {
         };
 
         if(!token) {
-            throw new Error('You are not login');
+            return handlerError(res, 401, 'You are not login')
         };
 
         // check user exist
@@ -92,12 +92,12 @@ exports.protect = async (req, res, next) => {
             token
         });
         if(!currentUser) {
-            throw new Error('Please login again');
+            return handlerError(res, 401, 'Please login again')
         };
 
         // check password not change
         if(currentUser.changedPasswordAfter(decoded.iat)) {
-            throw new Error('password has been changed');
+            return handlerError(res, 401, 'password has been changed')
         };
 
         req.token = token;

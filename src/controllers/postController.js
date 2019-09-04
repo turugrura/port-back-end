@@ -86,7 +86,7 @@ exports.updatePost = async (req, res) => {
             runValidators: true
         });
         if(!updatedPost) {
-            handlerError(res, 400, 'post not found');
+            return handlerError(res, 400, 'post not found');
         };
 
         handlerSuccess(res, 200, updatedPost);
@@ -101,7 +101,7 @@ exports.deletePost = async (req, res) => {
 
         const deletedPost = await Post.findByIdAndDelete(postId);
         if(!deletedPost) {
-            handlerError(res, 400, 'post not found');
+            return handlerError(res, 400, 'post not found');
         };
 
         handlerSuccess(res, 200, []);
@@ -114,7 +114,7 @@ exports.checkPostExist = async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.postId);
         if(!post){
-            handlerError(res, 400, 'post not found');
+            return handlerError(res, 400, 'post not found');
         };
 
         next();

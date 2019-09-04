@@ -45,7 +45,7 @@ app.use(hpp({
 /**
  * - Custom Middleware
  */
-app.use(middleware.printMessage1);
+// app.use(middleware.printMessage1);
 
 // Router
 app.use('/users', userRouter);

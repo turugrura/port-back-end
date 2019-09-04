@@ -122,7 +122,7 @@ const createComment = async (req, res) => {
             post: postId
         }).save();
         if(!newComment) {
-            handlerError(res, 400, 'no comment was created');
+            return handlerError(res, 400, 'no comment was created');
         }
 
         handlerSuccess(res, 201, newComment);
@@ -140,7 +140,7 @@ const updateComment = async (req, res) => {
             new: true
         });
         if(!updatedComment) {
-            handlerError(res, 400, 'comment not found');
+            return handlerError(res, 400, 'comment not found');
         };
 
         handlerSuccess(res, 200, updatedComment);
@@ -153,7 +153,7 @@ const deleteComment = async (req, res) => {
     try {
         const deletedComment = await Comment.findByIdAndDelete(req.params.commentId);
         if(!deletedComment) {
-            handlerError(res, 400, 'comment not found');
+            return handlerError(res, 400, 'comment not found');
         };
 
         handlerSuccess(res, 200, []);

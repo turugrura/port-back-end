@@ -49,7 +49,7 @@ exports.updateUser = async (req, res) => {
             runValidators: true
         });
         if(!user) {
-            handlerError(res, 400, 'user not found');
+            return handlerError(res, 400, 'user not found');
         };
 
         handlerSuccess(res, 200, user);
@@ -63,7 +63,7 @@ exports.deleteUser = async (req, res) => {
         const { userId } = req.params;
         const delUser = await User.findByIdAndDelete(userId);
         if(!delUser) {
-            handlerError(res, 400, 'user not found');
+            return handlerError(res, 400, 'user not found');
         };
 
         // TODO transaction
@@ -94,7 +94,7 @@ exports.updateMe = async (req, res) => {
         });
 
         if(!me) {
-            handlerError(res, 401, 'Please login again');
+            return handlerError(res, 401, 'Please login again');
         };
 
         handlerSuccess(res, 200, me);
@@ -112,7 +112,7 @@ exports.deleteMe = async (req, res) => {
             new: true
         });
         if(!deletedMe) {
-            handlerError(res, 401, 'Please login again');
+            return handlerError(res, 401, 'Please login again');
         };
 
         handlerSuccess(res, 200, deletedMe);

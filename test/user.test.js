@@ -5,50 +5,73 @@ const User = require('../src/models/user');
 const {
     userOne,
     userTwo,
-    userThree,
     setupDatabase
 } = require('./fixtures/db');
 
 beforeEach(setupDatabase);
 
-test('should get users', async () => {
+test('should get all users', async () => {
     const res = await request(app)
         .get('/users')
         .expect(200);
     
     // exist 3 user
     const { data } = res.body;
-    expect(data.length).toBe(3);
+    expect(data.length).toBe(2);
 });
 
 test('should get one user', async () => {
     const res = await request(app)
-        .get(`/users/${userTwo._id}`)
+        .get(`/users/${userOne._id}`)
         .expect(200);
 
-    const { username, password, title } = res.body.data[0];
-    expect(username).toBe(userTwo.username);
-    expect(password).not.toEqual(userTwo.password);
-    expect(title).toBe(userTwo.title);
-})
+    expect(res.body.data.length).toBe(1);
+});
 
-test('should create new user', async () => {
-    const testUser = {
+test('should create user', async () => {
+    const userAllField = {
         username: 'testnaja',
-        password: '12345678'
+        password: '12345678',
+        title: 'test title',
+        role: 'admin',
+        active: false,
+        image: 'noooooo'
     };
-    const newUser = await request(app)
+    const res1 = await request(app)
         .post('/users')
-        .send(testUser)
+        .send(userAllField)
         .expect(201);
     
     // check from DB
-    const user = await User.findById(newUser.body.data._id);
-    expect(user.username).toBe(testUser.username);
-    expect(user.password).not.toBe(testUser.password);
+    const user1 = await User.findById(res1.body.data._id);
+    expect(user1.username).toBe(userAllField.username);
+    expect(user1.password).not.toBe(userAllField.password);
+    expect(user1.title).toBe(userAllField.title);
+    expect(user1.role).toBe(userAllField.role);
+    // expect(user1.active).toBe(userAllField.active);
+    expect(user1.image).toBe(userAllField.image);
+
+    const userSomeField = {
+        username: 'testnaja2',
+        password: '12345678'
+    };
+    const res2 = await request(app)
+        .post('/users')
+        .send(userSomeField)
+        .expect(201);
+    
+    // check from DB
+    const user2 = await User.findById(res2.body.data._id);
+    expect(user2.username).toBe(userSomeField.username);
+    expect(user2.password).not.toBe(userSomeField.password);
+
+    // check default value
+    expect(user2.title).toBe(userOne.titleDefault);
+    expect(user2.role).toBe(userOne.roleDefault);
+    expect(user2.image).toBe(userOne.imageDefault);
 });
 
-test('should not create new user', async () => {
+test('should not create user with invalid value', async () => {
     // user already exist
     await request(app)
         .post('/users')
@@ -190,6 +213,15 @@ test('should signup', async () => {
 })
 
 test('should not signup', async () => {
+    // exist user
+    await request(app)
+        .post('/users/signup')
+        .send({
+            username: userOne.username,
+            password: '12345678'
+        })
+        .expect(400);
+
     // no username
     await request(app)
         .post('/users/signup')
