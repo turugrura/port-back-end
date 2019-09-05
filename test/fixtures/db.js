@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../../src/models/user');
 const Todo = require('../../src/models/todo');
+const Post = require('../../src/models/post');
 
 // test default value
 const userOneId = new mongoose.Types.ObjectId();
@@ -47,15 +48,33 @@ const todoTwo = {
     status: 'done'
 };
 
+const postOneId = new mongoose.Types.ObjectId();
+const postOne = {
+    _id: postOneId,
+    author: userTwoId,
+    content: 'post one'
+};
+
+const postTwoId = new mongoose.Types.ObjectId();
+const postTwo = {
+    _id: postTwoId,
+    author: userTwoId,
+    content: 'post two'
+};
+
 const setupDatabase = async () => {
     await User.deleteMany();
     await Todo.deleteMany();
+    await Post.deleteMany();
 
     await new User(userOne).save();
     await new User(userTwo).save();
 
     await new Todo(todoOne).save();
     await new Todo(todoTwo).save();
+
+    await new Post(postOne).save();
+    await new Post(postTwo).save();
 };
 
 module.exports = {
@@ -63,5 +82,7 @@ module.exports = {
     userTwo,
     todoOne,
     todoTwo,
+    postOne,
+    postTwo,
     setupDatabase
 }

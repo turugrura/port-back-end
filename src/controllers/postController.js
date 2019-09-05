@@ -81,6 +81,11 @@ exports.updatePost = async (req, res) => {
         const allowedField = ['content', 'like'];
         const data = getDataAllowedSave(allowedField, req.body);
 
+        const post = await Post.findById(postId);
+        if(post.author.toString() != req.user._id) {
+            return handlerError(res, 401, 'no permission for this post')
+        };
+
         const updatedPost = await Post.findByIdAndUpdate(postId, data, {
             new: true,
             runValidators: true
@@ -98,6 +103,11 @@ exports.updatePost = async (req, res) => {
 exports.deletePost = async (req, res) => {
     try {
         const { postId } = req.params;
+
+        const post = await Post.findById(postId);
+        if(post.author.toString() != req.user._id) {
+            return handlerError(res, 401, 'no permission for this post')
+        };
 
         const deletedPost = await Post.findByIdAndDelete(postId);
         if(!deletedPost) {
