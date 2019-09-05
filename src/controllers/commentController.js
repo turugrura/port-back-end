@@ -135,12 +135,18 @@ const updateComment = async (req, res) => {
     try {
         const allowedSave = ['content'];
         const data = getDataAllowedSave(allowedSave, req.body);
+
+        const cm = await Comment.findById(req.params.commentId);
+        if(cm.author.toString() != req.user._id) {
+            return handlerError(res, 401, 'no permission to update this comment');
+        };
         
         const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, data, {
-            new: true
+            new: true,
+            runValidators: true
         });
         if(!updatedComment) {
-            return handlerError(res, 400, 'comment not found');
+            return handlerError(res, 404, 'comment not found');
         };
 
         handlerSuccess(res, 200, updatedComment);
@@ -151,9 +157,14 @@ const updateComment = async (req, res) => {
 
 const deleteComment = async (req, res) => {
     try {
+        const cm = await Comment.findById(req.params.commentId);
+        if(cm.author.toString() != req.user._id) {
+            return handlerError(res, 401, 'no permission to update this comment');
+        };
+
         const deletedComment = await Comment.findByIdAndDelete(req.params.commentId);
         if(!deletedComment) {
-            return handlerError(res, 400, 'comment not found');
+            return handlerError(res, 404, 'comment not found');
         };
 
         handlerSuccess(res, 200, []);

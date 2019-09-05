@@ -19,7 +19,7 @@ router.route('/')
 
 router.route('/:commentId')
     .get(getComment)
-    .patch(protect, checkPostExist, updateComment)
-    .delete(protect, checkPostExist, deleteComment);
+    .patch(protect, updateComment)
+    .delete(protect, deleteComment);
 
 module.exports = router;

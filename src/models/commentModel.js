@@ -11,7 +11,8 @@ const commentSchema = new mongoose.Schema({
     },
     content: {
         type: String,
-        maxlength: 200
+        maxlength: 200,
+        required: true
     }
 }, {
     timestamps: { createdAt: true, updatedAt: false },
