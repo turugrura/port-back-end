@@ -1,13 +1,13 @@
 const User = require('../models/userModel');
 const Post = require('../models/postModel');
 
-const { handlerError, handlerSuccess } = require('./handlerResponse');
+const AppError = require('../utils/appError');
+const { handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');
 
-exports.getPost = async (req, res) => {
+exports.getPost = async (req, res, next) => {
     try {
         const { userId, postId } = req.params;
-        // const post = await Post.findById(postId);
 
         let post;
         let filter = { user: {}, post: {}};
@@ -21,15 +21,19 @@ exports.getPost = async (req, res) => {
             });
         } else {
             post = await Post.find(filter.post);
-        }
+
+            if(post.length === 0) {
+                return next(new AppError('Post not found.', 404));
+            };
+        };
 
         handlerSuccess(res, 200, post);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.getPosts = async (req, res) => {
+exports.getPosts = async (req, res, next) => {
     try {
         // const posts = await Post.find();
         const { userId } = req.params;
@@ -54,11 +58,11 @@ exports.getPosts = async (req, res) => {
 
         handlerSuccess(res, 200, posts, count);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.createPost = async (req, res) => {
+exports.createPost = async (req, res, next) => {
     try {
         const author = req.user._id;
         const allowedField = ['content'];
@@ -71,11 +75,11 @@ exports.createPost = async (req, res) => {
 
         handlerSuccess(res, 201, post);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.updatePost = async (req, res) => {
+exports.updatePost = async (req, res, next) => {
     try {
         const { postId } = req.params;
         const allowedField = ['content', 'like'];
@@ -83,7 +87,7 @@ exports.updatePost = async (req, res) => {
 
         const post = await Post.findById(postId);
         if(post.author.toString() != req.user._id) {
-            return handlerError(res, 401, 'no permission for this post')
+            return next(new AppError('No permission to update post.', 401));
         };
 
         const updatedPost = await Post.findByIdAndUpdate(postId, data, {
@@ -91,32 +95,32 @@ exports.updatePost = async (req, res) => {
             runValidators: true
         });
         if(!updatedPost) {
-            return handlerError(res, 400, 'post not found');
+            return next(new AppError('Post not found.', 404));
         };
 
         handlerSuccess(res, 200, updatedPost);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.deletePost = async (req, res) => {
+exports.deletePost = async (req, res, next) => {
     try {
         const { postId } = req.params;
 
         const post = await Post.findById(postId);
         if(post.author.toString() != req.user._id) {
-            return handlerError(res, 401, 'no permission for this post')
+            return next(new AppError('No permission to delete post.', 401));
         };
 
         const deletedPost = await Post.findByIdAndDelete(postId);
         if(!deletedPost) {
-            return handlerError(res, 400, 'post not found');
+            return next(new AppError('Post not found.', 404));
         };
 
         handlerSuccess(res, 200, []);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
@@ -124,11 +128,11 @@ exports.checkPostExist = async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.postId);
         if(!post){
-            return handlerError(res, 400, 'post not found');
+            return next(new AppError('Post not found.', 404));
         };
 
         next();
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };

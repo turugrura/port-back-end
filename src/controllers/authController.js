@@ -1,7 +1,7 @@
 const {promisify} = require('util');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
-const { handlerError, handlerSuccess } = require('./handlerResponse');
+const AppError = require('../utils/appError');
 
 const sendToken = (res, user, status, token) => {
     const cookieOption = {
@@ -22,7 +22,7 @@ const sendToken = (res, user, status, token) => {
     });
 };
 
-exports.signup = async (req, res) => {
+exports.signup = async (req, res, next) => {
     try {
         const { username, password, title } = req.body;
         const user = new User({
@@ -36,32 +36,32 @@ exports.signup = async (req, res) => {
         
         sendToken(res, newUser, 201, token);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
         if(!username || !password) {
-            return handlerError(res, 400, 'username or password is invalid!');
+            return next(new AppError('username or password is invalid.', 400));
         }
         const user = await User.findByCredentials(username, password);
         const token = await user.generateAuthToken();        
         
         sendToken(res, user, 200, token);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.logout = async (req, res) => {
+exports.logout = async (req, res, next) => {
     try {
         const me = await User.findByIdAndUpdate(req.user._id, {
             token: ''
         });
         if(!me) {
-            return handlerError(res, 401, 'Please login again');            
+            return next(new AppError('Please login again', 401));
         };
 
         res.status(200).json({
@@ -69,7 +69,7 @@ exports.logout = async (req, res) => {
             data: []
         });
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
@@ -82,7 +82,7 @@ exports.protect = async (req, res, next) => {
         };
 
         if(!token) {
-            return handlerError(res, 401, 'You are not login')
+            next(new AppError('No token is invalid, please login again.', 401));
         };
 
         // check user exist
@@ -92,12 +92,12 @@ exports.protect = async (req, res, next) => {
             token
         });
         if(!currentUser) {
-            return handlerError(res, 401, 'Please login again')
+            next(new AppError('Current user not existed or token is invalid, please login again.', 401));
         };
 
         // check password not change
         if(currentUser.changedPasswordAfter(decoded.iat)) {
-            return handlerError(res, 401, 'password has been changed')
+            return next(new AppError('Password has been changed, please login again', 401));
         };
 
         req.token = token;
@@ -105,6 +105,6 @@ exports.protect = async (req, res, next) => {
         
         next();
     } catch (error) {
-        handlerError(res, 401, error.message);
+        next(new AppError(error.message, 401));
     }    
 };

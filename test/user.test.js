@@ -322,7 +322,7 @@ test('should not logout with unthorization', async () => {
         .expect(401);
 });
 
-test('should get profile with authorization', async () => {
+test('should get me with authorization', async () => {
     await request(app)
         .get('/users/me')
         .set('Authorization', `Bearer ${userTwo.token}`)
@@ -330,7 +330,7 @@ test('should get profile with authorization', async () => {
         .expect(200);
 });
 
-test('should not get profile with unauthorization', async () => {
+test('should not get me with unauthorization', async () => {
     await request(app)
         .get('/users/me')
         .set('Authorization', `Bearer ${userTwo.token + 1}`)

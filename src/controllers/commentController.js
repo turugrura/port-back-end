@@ -2,13 +2,12 @@ const User = require('../models/userModel');
 const Post = require('../models/postModel');
 const Comment = require('../models/commentModel');
 
-const { handlerError, handlerSuccess } = require('./handlerResponse');
+const AppError = require('../utils/appError');
+const { handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');
 
-const getComment = async (req, res) => {
+const getComment = async (req, res, next) => {
     try {
-        // const comment = await Comment.findById(req.params.commentId);
-
         const { userId, postId, commentId } = req.params;
         let comment;
         let filter = { user: {}, post: {}};
@@ -39,16 +38,20 @@ const getComment = async (req, res) => {
                 });
             } else {
                 comment = await Comment.find({ _id: commentId });
-            }
-        }
+
+                if(comment.length === 0) {
+                    return next(new AppError('Comment not found.', 404));
+                };
+            };
+        };
 
         handlerSuccess(res, 200, comment);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-const getComments = async (req, res) => {
+const getComments = async (req, res, next) => {
     try {
         // const comments = await Comment.find();
         
@@ -106,11 +109,11 @@ const getComments = async (req, res) => {
 
         handlerSuccess(res, 200, comments, count);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-const createComment = async (req, res) => {
+const createComment = async (req, res, next) => {
     try {
         const allowedSave = ['content'];
         const data = getDataAllowedSave(allowedSave, req.body);
@@ -121,24 +124,21 @@ const createComment = async (req, res) => {
             author: req.user._id,
             post: postId
         }).save();
-        if(!newComment) {
-            return handlerError(res, 400, 'no comment was created');
-        }
 
         handlerSuccess(res, 201, newComment);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-const updateComment = async (req, res) => {
+const updateComment = async (req, res, next) => {
     try {
         const allowedSave = ['content'];
         const data = getDataAllowedSave(allowedSave, req.body);
 
         const cm = await Comment.findById(req.params.commentId);
         if(cm.author.toString() != req.user._id) {
-            return handlerError(res, 401, 'no permission to update this comment');
+            return next(new AppError('No permission to update comment.', 401));
         };
         
         const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, data, {
@@ -146,30 +146,30 @@ const updateComment = async (req, res) => {
             runValidators: true
         });
         if(!updatedComment) {
-            return handlerError(res, 404, 'comment not found');
+            return next(new AppError('Comment not found.', 404));
         };
 
         handlerSuccess(res, 200, updatedComment);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-const deleteComment = async (req, res) => {
+const deleteComment = async (req, res, next) => {
     try {
         const cm = await Comment.findById(req.params.commentId);
         if(cm.author.toString() != req.user._id) {
-            return handlerError(res, 401, 'no permission to update this comment');
+            return next(new AppError('No permission to delete comment.', 401));
         };
 
         const deletedComment = await Comment.findByIdAndDelete(req.params.commentId);
         if(!deletedComment) {
-            return handlerError(res, 404, 'comment not found');
+            return next(new AppError('Comment not found.', 404));
         };
 
         handlerSuccess(res, 200, []);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 

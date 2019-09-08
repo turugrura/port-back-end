@@ -1,13 +1,13 @@
 const Todo = require('../models/todoModel');
 const User = require('../models/userModel');
 
-const { handlerError, handlerSuccess } = require('./handlerResponse');
+const AppError = require('../utils/appError');
+const { handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');
 
-exports.getTodo = async (req, res) => {
+exports.getTodo = async (req, res, next) => {
     try {
         const { userId, todoId } = req.params;
-        // const todo = await Todo.findById(todoId);
 
         let todo;
         let filter = {};
@@ -20,15 +20,19 @@ exports.getTodo = async (req, res) => {
             });
         } else {
             todo = await Todo.find({ _id: todoId });
-        }
+            
+            if(todo.length === 0) {
+                return next(new AppError('Todo not found.', 404));
+            };
+        };
         
         handlerSuccess(res, 200, todo);
     } catch (error) {
-        handlerError(res, 400, error.message);        
+        next(new AppError(error.message, 400)); 
     }
 };
 
-exports.getTodos = async (req, res) => {
+exports.getTodos = async (req, res, next) => {
     try {        
         // const todos = await Todo.find(filter);
         const { userId } = req.params;
@@ -51,11 +55,11 @@ exports.getTodos = async (req, res) => {
                 
         handlerSuccess(res, 200, todos, count);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.createTodo = async (req, res) => {
+exports.createTodo = async (req, res, next) => {
     try {
         const author = req.user._id;
         const allowedField = ['topic', 'content'];
@@ -68,11 +72,11 @@ exports.createTodo = async (req, res) => {
 
         handlerSuccess(res, 201, newTodo);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.updateTodo = async (req, res) => {
+exports.updateTodo = async (req, res, next) => {
     try {
         const { todoId } = req.params;
         const allowedField = ['topic','content','status'];
@@ -80,7 +84,7 @@ exports.updateTodo = async (req, res) => {
         
         const todo = await Todo.findById(todoId);
         if(todo.author.toString() != req.user._id) {
-            return handlerError(res, 401, 'todo is not your');
+            return next(new AppError('No permission to update todo.', 401));
         };
         
         const updatedTodo = await Todo.findByIdAndUpdate(todoId, data, {
@@ -88,31 +92,31 @@ exports.updateTodo = async (req, res) => {
             new: true
         });
         if(!updatedTodo) {
-            return handlerError(res, 400, 'todo not found');
+            return next(new AppError('Todo not found.', 404));
         };
 
         handlerSuccess(res, 200, updatedTodo);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };
 
-exports.deleteTodo = async (req, res) => {
+exports.deleteTodo = async (req, res, next) => {
     try {
         const { todoId } = req.params;
 
         const todoCheck = await Todo.findById(todoId);
         if(todoCheck.author.toString() != req.user._id) {
-            return handlerError(res, 401, 'todo is not your');
+            return next(new AppError('No permission to delete todo.', 401));
         };
 
         const todo = await Todo.findByIdAndDelete(todoId);
         if(!todo) {
-            return handlerError(res, 400, 'todo not found');
+            return next(new AppError('Todo not found.', 404));
         };
         
         handlerSuccess(res, 200, []);
     } catch (error) {
-        handlerError(res, 400, error.message);
+        next(new AppError(error.message, 400));
     }
 };

@@ -6,8 +6,9 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 
-const middleware = require('./middleware/mid');
+// const middleware = require('./middleware/mid');
 
+const globalErrorHandler = require('./controllers/errorController');
 const userRouter = require('./routers/userRouter');
 const todoRouter = require('./routers/todoRouter');
 const postRouter = require('./routers/postRouter');
@@ -53,11 +54,11 @@ app.use('/todos', todoRouter);
 app.use('/posts', postRouter);
 app.use('/comments', commentRouter);
 
-app.all('*', (req, res) => {
-    res.status(404).json({
-        status: 'fail',
-        error: 'page not found'
-    })
+app.all('*', (req, res, next) => {
+    console.log(`Request for ${req.originalUrl} not found`);
+    next(new Error(`Request for ${req.originalUrl} not found`));
 });
+
+app.use(globalErrorHandler);
 
 module.exports = app;
