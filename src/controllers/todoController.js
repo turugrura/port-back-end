@@ -1,5 +1,5 @@
-const Todo = require('../models/todo');
-const User = require('../models/user');
+const Todo = require('../models/todoModel');
+const User = require('../models/userModel');
 
 const { handlerError, handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');

@@ -1,5 +1,5 @@
-const User = require('../models/user');
-const Post = require('../models/post');
+const User = require('../models/userModel');
+const Post = require('../models/postModel');
 
 const { handlerError, handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');

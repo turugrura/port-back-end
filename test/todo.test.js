@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app');
-const Todo = require('../src/models/todo');
+const Todo = require('../src/models/todoModel');
 
 const {
     userOne,

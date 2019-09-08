@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
-const User = require('../../src/models/user');
-const Todo = require('../../src/models/todo');
-const Post = require('../../src/models/post');
+const User = require('../../src/models/userModel');
+const Todo = require('../../src/models/todoModel');
+const Post = require('../../src/models/postModel');
 const Comment = require('../../src/models/commentModel');
 
 // test default value

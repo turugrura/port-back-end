@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 
-const Post = require('../src/models/post');
+const Post = require('../src/models/postModel');
 const {
     userOne,
     userTwo,
