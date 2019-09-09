@@ -9,6 +9,7 @@ const hpp = require('hpp');
 // const middleware = require('./middleware/mid');
 
 const globalErrorHandler = require('./controllers/errorController');
+const AppError = require('./utils/appError');
 const userRouter = require('./routers/userRouter');
 const todoRouter = require('./routers/todoRouter');
 const postRouter = require('./routers/postRouter');
@@ -55,8 +56,7 @@ app.use('/posts', postRouter);
 app.use('/comments', commentRouter);
 
 app.all('*', (req, res, next) => {
-    console.log(`Request for ${req.originalUrl} not found`);
-    next(new Error(`Request for ${req.originalUrl} not found`));
+    next(new AppError(`Request for ${req.originalUrl} not found`));
 });
 
 app.use(globalErrorHandler);

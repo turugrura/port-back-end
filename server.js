@@ -1,6 +1,20 @@
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 
+process.on('unhandledRejection', err => {
+    console.log(err);
+    console.log('unhandledRejection!!!');
+
+    process.exit(1);
+});
+
+process.on('uncaughtException', err => {
+    console.log(err);
+    console.log('uncaughtException!!!');
+
+    process.exit(1);
+});
+
 // connect DB
 require('./src/db/mongoose');
 
