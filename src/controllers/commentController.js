@@ -137,7 +137,10 @@ const updateComment = async (req, res, next) => {
         const data = getDataAllowedSave(allowedSave, req.body);
 
         const cm = await Comment.findById(req.params.commentId);
-        if(cm.author.toString() != req.user._id) {
+        if(!cm) {
+            return next(new AppError('Comment not found', 404));
+        };
+        if(cm.author._id.toString() != req.user._id) {
             return next(new AppError('No permission to update comment.', 401));
         };
         
@@ -158,7 +161,10 @@ const updateComment = async (req, res, next) => {
 const deleteComment = async (req, res, next) => {
     try {
         const cm = await Comment.findById(req.params.commentId);
-        if(cm.author.toString() != req.user._id) {
+        if(!cm) {
+            return next(new AppError('Comment not found', 404));
+        };
+        if(cm.author._id.toString() != req.user._id) {
             return next(new AppError('No permission to delete comment.', 401));
         };
 

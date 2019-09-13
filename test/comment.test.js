@@ -41,7 +41,7 @@ test('should create comment with authorization', async () => {
         .expect(201);
 
     const { content, author, post } = await Comment.findById(res.body.data._id);
-    expect(author).toEqual(userOne._id);
+    expect(author._id).toEqual(userOne._id);
     expect(post).toEqual(postOne._id);
     expect(content).toBe(cm.content);
 });
@@ -105,7 +105,7 @@ test('should update comment with authorization', async () => {
         .expect(200);
 
     const { content, author, post } = await Comment.findById(commentOne._id);
-    expect(author).toEqual(commentOne.author);
+    expect(author._id).toEqual(commentOne.author);
     expect(post).toEqual(commentOne.post);
     expect(content).toBe(cm.content);
 });
