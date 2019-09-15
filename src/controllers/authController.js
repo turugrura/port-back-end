@@ -10,7 +10,7 @@ const sendToken = (res, user, status, token) => {
         ),
         httpOnly: true
     };
-    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+    if (process.env.NODE_ENV === 'production') cookieOption.secure = true;
 
     res.cookie('jwt', token, cookieOption);
 
@@ -82,7 +82,7 @@ exports.protect = async (req, res, next) => {
         };
 
         if(!token) {
-            next(new AppError('No token is invalid, please login again.', 401));
+            return next(new AppError('Token is invalid, please login again.', 401));
         };
 
         // check user exist
@@ -92,7 +92,7 @@ exports.protect = async (req, res, next) => {
             token
         });
         if(!currentUser) {
-            next(new AppError('Current user not existed or token is invalid, please login again.', 401));
+            return next(new AppError('Current user not existed or token is invalid, please login again.', 401));
         };
 
         // check password not change

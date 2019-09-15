@@ -52,7 +52,16 @@ exports.getPosts = async (req, res, next) => {
                 count += user.posts.length;
             });
         } else {
-            posts = await Post.find();
+            // posts = await Post.find();
+            const page = req.query.page * 1 || 1;
+            const limit = 100;
+            const skip = (page - 1) * limit;
+            posts = await Post.find().populate({
+                path: 'author',
+                select: ['title']
+            }).sort({
+                createdAt: '-1'
+            }).skip(skip).limit(limit);
             count = posts.length;
         }
 

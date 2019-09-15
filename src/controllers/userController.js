@@ -17,10 +17,16 @@ exports.getUsers = async (req, res, next) => {
 exports.getUser = async (req, res, next) => {
     try {
         const { userId } = req.params;
-        const user = await User.find({ _id: userId });
+        let user = await User.find({ _id: userId });
 
-        if(user.length === 0) {
+        if (user.length === 0) {
             return next(new AppError('User not found.', 404));
+        };
+
+        if (req.token) {
+            user = user[0].toJSON();
+            user['token'] = req.token;
+            user = [user]
         };
 
         handlerSuccess(res, 200, user);

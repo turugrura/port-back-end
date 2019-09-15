@@ -57,6 +57,10 @@ const getComments = async (req, res, next) => {
         
         const { userId, postId } = req.params;
 
+        const page = req.query.page * 1 || 1;
+        const limit = 100;
+        const skip = (page - 1) * limit;
+
         let comments;
         let count = 0;
         let filter = { user: {}, post: {}};
@@ -93,9 +97,19 @@ const getComments = async (req, res, next) => {
         } else {
             if(req.baseUrl.includes('posts')) {
                 // posts/postId/comments
-                comments = await Post.find(filter.post).populate({
-                    path: 'comments'
-                });
+                comments = await Post.find(filter.post)
+                .populate({
+                    path: 'author',
+                    select: ['title']
+                })
+                .populate({
+                    path: 'comments',
+                    select: ['content', 'createdAt']
+                })
+                .sort({
+                    createdAt: -1
+                })
+                .skip(skip).limit(limit);
 
                 comments.forEach( post => {
                     count += post.comments.length;
