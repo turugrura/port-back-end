@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const path = require("path");
 
 // const middleware = require('./middleware/mid');
 
@@ -20,7 +21,7 @@ app.use(helmet());
 
 // limit request from same IP
 const limiter = rateLimit({
-    max: 100,
+    max: 300,
     windowMs: 60*60*1000,
     message: 'Too many request from this IP, please try again next hour'
 });
@@ -47,8 +48,13 @@ app.use(hpp({
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:8000"); // update to match the domain you will make the request from
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.header("Access-Control-Allow-Methods", "PATCH, DELETE")
     next();
 });
+
+// set directory for static file
+const publicDirPath = path.join(__dirname, "../public")
+app.use(express.static(publicDirPath))
 
 /**
  * - Custom Middleware

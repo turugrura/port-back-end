@@ -22,7 +22,7 @@ const sendToken = (res, user, status, token) => {
     });
 };
 
-exports.signup = async (req, res, next) => {
+const signup = async (req, res, next) => {
     try {
         const { username, password, title } = req.body;
         const user = new User({
@@ -40,7 +40,7 @@ exports.signup = async (req, res, next) => {
     }
 };
 
-exports.login = async (req, res, next) => {
+const login = async (req, res, next) => {
     try {
         const { username, password } = req.body;
         if(!username || !password) {
@@ -55,7 +55,7 @@ exports.login = async (req, res, next) => {
     }
 };
 
-exports.logout = async (req, res, next) => {
+const logout = async (req, res, next) => {
     try {
         const me = await User.findByIdAndUpdate(req.user._id, {
             token: ''
@@ -73,7 +73,7 @@ exports.logout = async (req, res, next) => {
     }
 };
 
-exports.protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
     try {
         // check token valid
         let token;
@@ -108,3 +108,12 @@ exports.protect = async (req, res, next) => {
         next(new AppError(error.message, 401));
     }    
 };
+
+module.exports = {
+    sendToken,
+    signup,
+    login,
+    login,
+    logout,
+    protect
+}

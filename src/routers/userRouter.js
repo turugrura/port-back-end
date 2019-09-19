@@ -15,7 +15,10 @@ const {
     deleteUser, 
     getMe, 
     updateMe,
-    deleteMe
+    deleteMe,
+    updateUserImage,
+    resizeUserImage,
+    changePasswordMe
 } = require('../controllers/userController');
 const todoRouter = require('./todoRouter');
 const postRouter = require('./postRouter');
@@ -38,8 +41,10 @@ router.route('/')
 
 router.route('/me')
     .get(protect, getMe, getUser)
-    .patch(protect, updateMe)
+    .patch(protect, updateUserImage, resizeUserImage, updateMe)
     .delete(protect, deleteMe);
+router.route('/me/changepassword')
+    .post(protect, changePasswordMe);
 
 router.route('/:userId')
     .get(getUser)

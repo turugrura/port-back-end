@@ -352,3 +352,70 @@ test('should not delete user with unauthorization', async () => {
         .send()
         .expect(401);
 });
+
+test('should change password with authorization', async () => {
+    const password = {
+        oldPassword: userTwo.password,
+        newPassword: '123456789',
+        confirmPassword: '123456789'
+    };
+    const user = await request(app)
+        .post(`/users/me/changepassword`)
+        .set(`Authorization`, `Bearer ${userTwo.token}`)
+        .send(password)
+        .expect(200);
+
+    expect(user.token).not.toEqual(userTwo.token);
+});
+
+test('should not change password with unauthorization', async () => {
+    const password = {
+        oldPassword: userTwo.password,
+        newPassword: '123456789',
+        confirmPassword: '123456789'
+    };
+    const user = await request(app)
+        .post(`/users/me/changepassword`)
+        .set(`Authorization`, `Bearer ${userTwo.token}1`)
+        .send(password)
+        .expect(401);
+});
+
+test('should not change password with wrong oldPassword', async () => {
+    const password = {
+        oldPassword: userTwo.password + 1,
+        newPassword: '123456789',
+        confirmPassword: '123456789'
+    };
+    await request(app)
+        .post(`/users/me/changepassword`)
+        .set(`Authorization`, `Bearer ${userTwo.token}`)
+        .send(password)
+        .expect(400);
+});
+
+test('should not change password with wrong newPassword', async () => {
+    const password = {
+        oldPassword: userTwo.password,
+        newPassword: '12345',
+        confirmPassword: '12345'
+    };
+    await request(app)
+        .post(`/users/me/changepassword`)
+        .set(`Authorization`, `Bearer ${userTwo.token}`)
+        .send(password)
+        .expect(400);
+});
+
+test('should not change password with wrong new password and confirm password not the same', async () => {
+    const password = {
+        oldPassword: userTwo.password,
+        newPassword: '123456789',
+        confirmPassword: '1234567890'
+    };
+    const user = await request(app)
+        .post(`/users/me/changepassword`)
+        .set(`Authorization`, `Bearer ${userTwo.token}`)
+        .send(password)
+        .expect(400);
+});

@@ -1,8 +1,54 @@
 const User = require('../models/userModel');
+const multer = require('multer');
+const sharp = require('sharp');
 
+const { sendToken } = require('./authController')
 const AppError = require('../utils/appError');
 const { handlerSuccess } = require('./handlerResponse');
 const { getDataAllowedSave } = require('../utils/manipulateReq');
+
+const multerStorage = multer.memoryStorage();
+// const multerStorage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'public/img/users');
+//     },
+//     filename: (req, file, cb) => {
+//         const extension = file.mimetype.split('/')[1];
+//         cb(null, `user-image-${req.user._id}.${extension}`);
+//     }
+// });
+
+const multerFilter = (req, file, cb) => {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)){
+        return cb(new AppError('Please upload jpg, jpeg or png file', 400))
+    };
+
+    cb(undefined, true);
+};
+
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter,
+    // limits: {
+    //     fileSize: 1000000
+    // }
+});
+
+exports.updateUserImage = upload.single('image');
+
+exports.resizeUserImage = (req, res, next) => {
+    if (!req.file) return next();
+
+    req.file.filename = `user-image-${req.user._id}.jpeg`;
+
+    sharp(req.file.buffer)
+        .resize(250, 250)
+        .toFormat('jpeg')
+        .jpeg({ quality: 95 })
+        .toFile(`public/img/users/${req.file.filename}`);
+
+    next();
+};
 
 exports.getUsers = async (req, res, next) => {
     try {
@@ -96,7 +142,8 @@ exports.getMe = async (req, res, next) => {
 
 exports.updateMe = async (req, res, next) => {
     try {
-        const allowedSave = ['title', 'role', 'images'];
+        if (req.file) req.body.image = req.file.filename;
+        const allowedSave = ['title', 'role', 'image', 'username'];
         const data = getDataAllowedSave(allowedSave, req.body);
         
         const me = await User.findByIdAndUpdate(req.user._id, data, {
@@ -130,4 +177,23 @@ exports.deleteMe = async (req, res, next) => {
     } catch (error) {
         next(new AppError(error.message, 400));
     }
+};
+
+exports.changePasswordMe = async (req, res, next) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        if (newPassword !== confirmPassword) return next(new AppError('New password and confirm password are not the same.', 400));
+        
+        const user = await User.findByCredentials(req.user.username, oldPassword);
+        if (!user) return next(new AppError('Current user does not exist. please log in again.', 400));
+
+        user.password = newPassword;
+        user.passwordChangedAt = new Date();
+        const userUpdated = await user.save();
+        const token = await userUpdated.generateAuthToken();
+
+        sendToken(res, userUpdated, 200, token);
+    } catch (error) {
+        next(new AppError(error.message, 400));  
+    };
 };

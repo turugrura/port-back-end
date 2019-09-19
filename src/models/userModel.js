@@ -78,12 +78,14 @@ userSchema.virtual('comments', {
 userSchema.statics.findByCredentials = async (username, password) => {
     const user = await User.findOne({ username, active: true });
     if(!user) {
-        throw new Error('username not found');
+        // throw new Error('username not found');
+        return null;
     };
 
     const isPassMatch = await bcrypt.compare(password, user.password);
     if(!isPassMatch) {
-        throw new Error('password is incorrect!');
+        // throw new Error('password is incorrect!');
+        return null;
     };
 
     return user;
@@ -94,7 +96,7 @@ userSchema.methods.toJSON = function() {
     const userObject = user.toObject();
 
     delete userObject.password;
-    delete userObject.passwordChangedAt;
+    // delete userObject.passwordChangedAt;
     delete userObject.token;
 
     return userObject;
