@@ -44,7 +44,7 @@ router.route('/me')
     .patch(protect, updateUserImage, resizeUserImage, updateMe)
     .delete(protect, deleteMe);
 router.route('/me/changepassword')
-    .post(protect, changePasswordMe);
+    .patch(protect, changePasswordMe);
 
 router.route('/:userId')
     .get(getUser)

@@ -161,6 +161,28 @@ test('should not update post with invalid value', async () => {
         .expect(400);
 });
 
+test('should update add like', async () => {
+    await request(app)
+        .patch(`/posts/${postOne._id}/like`)
+        .set('Authorization', `Bearer ${userTwo.token}`)
+        .expect(200);
+
+    const { like } = await Post.findById(postOne._id);
+    const idxLike = like.findIndex( id => id.toString() == userTwo._id.toString());
+    expect(idxLike).not.toBe(-1);
+});
+
+test('should update remove like', async () => {
+    await request(app)
+        .patch(`/posts/${postOne._id}/like`)
+        .set('Authorization', `Bearer ${userOne.token}`)
+        .expect(200);
+
+    const { like } = await Post.findById(postOne._id);
+    const idxLike = like.findIndex( id => id.toString() == userTwo._id.toString());
+    expect(idxLike).toBe(-1);
+});
+
 test('should delete post with authorization', async () => {
     await request(app)
         .delete(`/posts/${postOne._id}`)

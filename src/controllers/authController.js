@@ -47,6 +47,10 @@ const login = async (req, res, next) => {
             return next(new AppError('username or password is invalid.', 400));
         }
         const user = await User.findByCredentials(username, password);
+        if (!user) {
+            return next(new AppError('username or password is invalid', 400));
+        };
+
         const token = await user.generateAuthToken();        
         
         sendToken(res, user, 200, token);

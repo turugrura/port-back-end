@@ -100,7 +100,7 @@ const getComments = async (req, res, next) => {
                 comments = await Post.find(filter.post)
                 .populate({
                     path: 'author',
-                    select: ['title']
+                    select: ['title', 'image']
                 })
                 .populate({
                     path: 'comments',

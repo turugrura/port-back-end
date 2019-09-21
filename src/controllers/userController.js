@@ -39,7 +39,7 @@ exports.updateUserImage = upload.single('image');
 exports.resizeUserImage = (req, res, next) => {
     if (!req.file) return next();
 
-    req.file.filename = `user-image-${req.user._id}.jpeg`;
+    req.file.filename = `user-image-${req.user._id}-${Date.now()}.jpeg`;
 
     sharp(req.file.buffer)
         .resize(250, 250)
@@ -185,7 +185,7 @@ exports.changePasswordMe = async (req, res, next) => {
         if (newPassword !== confirmPassword) return next(new AppError('New password and confirm password are not the same.', 400));
         
         const user = await User.findByCredentials(req.user.username, oldPassword);
-        if (!user) return next(new AppError('Current user does not exist. please log in again.', 400));
+        if (!user) return next(new AppError('Old password is incorrect.', 400));
 
         user.password = newPassword;
         user.passwordChangedAt = new Date();

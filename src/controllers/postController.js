@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const Post = require('../models/postModel');
+const mongoose = require('mongoose')
 
 const AppError = require('../utils/appError');
 const { handlerSuccess } = require('./handlerResponse');
@@ -58,7 +59,7 @@ exports.getPosts = async (req, res, next) => {
             const skip = (page - 1) * limit;
             posts = await Post.find().populate({
                 path: 'author',
-                select: ['title']
+                select: ['title', 'image']
             }).sort({
                 createdAt: '-1'
             }).skip(skip).limit(limit);
@@ -107,6 +108,30 @@ exports.updatePost = async (req, res, next) => {
             return next(new AppError('Post not found.', 404));
         };
 
+        handlerSuccess(res, 200, updatedPost);
+    } catch (error) {
+        next(new AppError(error.message, 400));
+    }
+};
+
+exports.updatePostLike = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+        const { postId } = req.params;
+        
+        if (!postId) return next(new AppError('There are no user or post.', 400));
+
+        const post = await Post.findById(postId);
+        if (!post) return next(new AppError('Post not found.', 404));
+        
+        const idxLike = post.like.findIndex( id => id.toString() == userId);
+        if (idxLike < 0) {
+            post.like.push(userId);
+        } else {
+            post.like.splice(idxLike, 1);
+        };
+
+        const updatedPost = await post.save();
         handlerSuccess(res, 200, updatedPost);
     } catch (error) {
         next(new AppError(error.message, 400));

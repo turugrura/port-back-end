@@ -11,6 +11,7 @@ const {
     getPosts,
     createPost,
     updatePost,
+    updatePostLike,
     deletePost
 } = require('../controllers/postController');
 const commentRouter = require('./commentRouter');
@@ -26,5 +27,8 @@ router.route('/:postId')
     .get(getPost)
     .patch(protect, updatePost)
     .delete(protect, deletePost);
+
+router.route('/:postId/like')
+    .patch(protect, updatePostLike);
 
 module.exports = router;

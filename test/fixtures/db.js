@@ -60,6 +60,7 @@ const postTwoId = new mongoose.Types.ObjectId();
 const postTwo = {
     _id: postTwoId,
     author: userTwoId,
+    like: [userOne._id],
     content: 'post two'
 };
 

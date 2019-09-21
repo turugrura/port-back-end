@@ -12,7 +12,8 @@ const postSchema = new mongoose.Schema({
         required: [true, 'Post must have content']
     },
     like: [{
-        type: mongoose.Schema.Types.ObjectId
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }]
 }, {
     timestamps: { createdAt: true, updatedAt: false },
