@@ -18,5 +18,7 @@ if (nodeEnv === 'production') {
 }
 
 mongoose.connect(dbPath, mongoOption).then(() => {
-    console.log(`connect MongoDB with mode ${process.env.NODE_ENV} successful!`);
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`connect MongoDB with mode ${process.env.NODE_ENV} successful!`);
+    }
 });
