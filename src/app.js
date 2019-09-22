@@ -6,6 +6,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const path = require("path");
+const compression = require('compression');
 
 // const middleware = require('./middleware/mid');
 
@@ -46,7 +47,7 @@ app.use(hpp({
 }));
 
 app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:8000"); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
     res.header("Access-Control-Allow-Methods", "PATCH, DELETE")
     next();
@@ -61,7 +62,12 @@ app.use(express.static(publicDirPath))
  */
 // app.use(middleware.printMessage1);
 
+app.use(compression());
+
 // Router
+app.get('/', (req, res, next) => {
+    res.redirect('/users/posts/comments')
+});
 app.use('/users', userRouter);
 app.use('/todos', todoRouter);
 app.use('/posts', postRouter);
