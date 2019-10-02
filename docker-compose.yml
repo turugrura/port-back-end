@@ -1,0 +1,21 @@
+version: '3.6'
+
+services:
+
+  # backend api
+  portapi:
+    container_name: backend
+    # image: node:12.10.0-slim
+    build: ./
+    command: npm start
+    working_dir: /usr/src/myport-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/usr/src/myport-api
+  
+  # mongodb
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
